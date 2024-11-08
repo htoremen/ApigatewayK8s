@@ -1,0 +1,31 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: api-gateway-ingress
+  namespace: api-gateway-namespace
+  annotations:
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+    nginx.ingress.kubernetes.io/backend-protocol: "HTTPS"
+spec:
+  rules:
+  - host: apigateway.local  # Use the common name specified in the certificate
+    http:
+      paths:
+      - path: /identity
+        pathType: Prefix
+        backend:
+          service:
+            name: identityservice-service
+            port:
+              number: 7101
+      - path: /auth
+        pathType: Prefix
+        backend:
+          service:
+            name: authservice-service
+            port:
+              number: 7102
+  tls:
+  - hosts:
+    - apigateway.local
+    secretName: apigateway-tls-secret

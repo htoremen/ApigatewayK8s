@@ -1,1 +1,30 @@
-kubectl create secret tls your-tls-secret --cert=path/to/cert.crt --key=path/to/cert.key -n api-gateway-namespace
+openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout tls.key -out tls.crt -subj "/CN=apigateway.local/O=local"
+
+kubectl create secret tls apigateway-tls-secret --cert=tls.crt --key=tls.key -n api-gateway-namespace
+
+
+https://chatgpt.com/c/672dcfd3-2e90-8005-a21e-c8269eb429d0
+set OPENSSL_CONF="C:\Program Files\Common Files\ssl\openssl.cnf"
+echo %OPENSSL_CONF%
+openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout certs/tls.key -out certs/tls.crt -config "C:\Program Files\Common Files\ssl\openssl.cnf" -subj "/CN=apigateway.local/O=local"
+
+
+kubectl create namespace api-gateway-namespace
+kubectl apply -f ingress.yaml
+
+kubectl get ingress -n api-gateway-namespace
+kubectl logs -l app.kubernetes.io/name=ingress-nginx -n ingress-nginx
+
+
+nginx
+kubectl get pods --all-namespaces | Select-String "nginx"
+kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/main/deploy/static/provider/cloud/deploy.yaml
+kubectl get pods -n ingress-nginx
+kubectl logs -l app.kubernetes.io/name=ingress-nginx -n ingress-nginx
+kubectl describe pod ingress-nginx-controller-6568cc55cd-vb5rg -n ingress-nginx
+kubectl get nodes
+kubectl get pods -n ingress-nginx
+
+minikube version
+minikube start
+minikube ip = 192.168.49.2
