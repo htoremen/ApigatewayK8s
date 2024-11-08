@@ -1,0 +1,26 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: authservice
+  namespace: api-gateway-namespace
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: authservice
+  template:
+    metadata:
+      labels:
+        app: authservice
+    spec:
+      containers:
+      - name: authservice
+        image: authservice:latest
+        ports:
+          - containerPort: 7102
+        readinessProbe:
+          httpGet:
+            path: /healthz
+            port: 7102
+          initialDelaySeconds: 5
+          periodSeconds: 10

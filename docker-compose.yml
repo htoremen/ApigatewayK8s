@@ -1,0 +1,23 @@
+services:
+  ocelotapigateway:
+    container_name: ocelotapigateway
+    image: ${DOCKER_REGISTRY-}ocelotapigateway
+    build:
+      context: .
+      dockerfile: apigateways/OcelotApigateway/Dockerfile
+
+  auth.service:
+    container_name: uthservice
+    image: ${DOCKER_REGISTRY-}authservice
+    build:
+      context: .
+      dockerfile: services/Auth.Service/Dockerfile
+
+
+  identity.service:
+    container_name: identityservice
+    image: ${DOCKER_REGISTRY-}identityservice
+    build:
+      context: .
+      dockerfile: services/Identity.Service/Dockerfile
+

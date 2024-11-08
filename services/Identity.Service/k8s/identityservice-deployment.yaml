@@ -1,0 +1,26 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: identityservice
+  namespace: api-gateway-namespace
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: identityservice
+  template:
+    metadata:
+      labels:
+        app: identityservice
+    spec:
+      containers:
+      - name: identityservice
+        image: identityservice:latest
+        ports:
+          - containerPort: 7101
+        readinessProbe:
+          httpGet:
+            path: /healthz
+            port: 7101
+          initialDelaySeconds: 5
+          periodSeconds: 10

@@ -1,0 +1,1 @@
+kubectl create secret tls your-tls-secret --cert=path/to/cert.crt --key=path/to/cert.key -n api-gateway-namespace
