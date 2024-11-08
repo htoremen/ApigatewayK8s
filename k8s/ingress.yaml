@@ -4,28 +4,30 @@ metadata:
   name: api-gateway-ingress
   namespace: api-gateway-namespace
   annotations:
-    nginx.ingress.kubernetes.io/ssl-redirect: "true"
-    nginx.ingress.kubernetes.io/backend-protocol: "HTTPS"
+    nginx.ingress.kubernetes.io/rewrite-target: /
 spec:
   rules:
-  - host: apigateway.local  # Use the common name specified in the certificate
+  - host: apigateway.local  # Replace with your API Gateway's domain or IP
     http:
       paths:
-      - path: /identity
+      - path: /healthz
         pathType: Prefix
         backend:
           service:
-            name: identityservice-service
+            name: ocelot-api-gateway
             port:
-              number: 7101
-      - path: /auth
+              number: 80
+      - path: /identity/healthz
         pathType: Prefix
         backend:
           service:
-            name: authservice-service
+            name: identity-service
             port:
-              number: 7102
-  tls:
-  - hosts:
-    - apigateway.local
-    secretName: apigateway-tls-secret
+              number: 80
+      - path: /auth/healthz
+        pathType: Prefix
+        backend:
+          service:
+            name: auth-service
+            port:
+              number: 80

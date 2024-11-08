@@ -28,3 +28,34 @@ kubectl get pods -n ingress-nginx
 minikube version
 minikube start
 minikube ip = 192.168.49.2
+
+
+127.0.0.1 apigateway.local
+192.168.49.2 apigateway.local
+
+https://10.96.0.1:443
+
+https://apigateway.local/healthz
+https://apigateway.local/identity/healthz
+https://apigateway.local/auth/healthz
+
+-------------------------------------
+kubectl apply -f apigateway.yaml
+kubectl apply -f identityservice.yaml
+kubectl apply -f authservice.yaml
+kubectl apply -f ingress.yaml
+
+kubectl get pods -n api-gateway-namespace
+
+--------------------------------------------------------------------------------------------------------
+kubectl describe ingress api-gateway-ingress -n api-gateway-namespace
+kubectl logs ingress-nginx-controller-7b5956cc69-h5gzx -n ingress-nginx
+
+kubectl delete pod ocelot-api-gateway-9fb7bdb75-42qw4 -n api-gateway-namespace
+
+kubectl delete all --all -n api-gateway-namespace
+
+--------------------------------------------------------------------------------------------------------
+curl https://apigateway.local/healthz
+curl https://apigateway.local/identity/healthz
+curl https://apigateway.local/auth/healthz

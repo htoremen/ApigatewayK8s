@@ -7,7 +7,7 @@ services:
       dockerfile: apigateways/OcelotApigateway/Dockerfile
 
   auth.service:
-    container_name: uthservice
+    container_name: authservice
     image: ${DOCKER_REGISTRY-}authservice
     build:
       context: .
