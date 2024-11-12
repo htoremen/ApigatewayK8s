@@ -21,7 +21,7 @@ kubectl get pods --all-namespaces | Select-String "nginx"
 kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/main/deploy/static/provider/cloud/deploy.yaml
 kubectl get pods -n ingress-nginx
 kubectl logs -l app.kubernetes.io/name=ingress-nginx -n ingress-nginx
-kubectl describe pod ingress-nginx-controller-6568cc55cd-vb5rg -n ingress-nginx
+kubectl describe pod ingress-nginx-controller-7fbb97cccd-mn8j4 -n ingress-nginx
 kubectl get nodes
 kubectl get pods -n ingress-nginx
 
@@ -39,23 +39,211 @@ https://apigateway.local/healthz
 https://apigateway.local/identity/healthz
 https://apigateway.local/auth/healthz
 
--------------------------------------
-kubectl apply -f apigateway.yaml
-kubectl apply -f identityservice.yaml
-kubectl apply -f authservice.yaml
-kubectl apply -f ingress.yaml
-
 kubectl get pods -n api-gateway-namespace
+
+
+kubectl delete pod ingress-nginx-controller-59599b9459-86kwb -n ingress-nginx
+kubectl delete -f ingress.yaml
+
 
 --------------------------------------------------------------------------------------------------------
 kubectl describe ingress api-gateway-ingress -n api-gateway-namespace
 kubectl logs ingress-nginx-controller-7b5956cc69-h5gzx -n ingress-nginx
 
 kubectl delete pod ocelot-api-gateway-9fb7bdb75-42qw4 -n api-gateway-namespace
-
 kubectl delete all --all -n api-gateway-namespace
+
+--------------------------------------------------------------------------------------------------------
+kubectl describe pod auth-service-7887f46b8-2626x -n api-gateway-namespace
+kubectl describe pod identity-service-76457f5768-6ctw5 -n api-gateway-namespace
+kubectl describe pod ocelot-api-gateway-9fb7bdb75-bjkmx -n api-gateway-namespace
+--------------------------------------------------------------------------------------------------------
+docker login
+
+docker tag ocelotapigateway:latest huseyintoremen/ocelotapigateway:latest
+docker tag authservice:latest huseyintoremen/authservice:latest
+docker tag identityservice:latest huseyintoremen/identityservice:latest
+
+docker push huseyintoremen/ocelotapigateway:latest
+docker push huseyintoremen/authservice:latest
+docker push huseyintoremen/identityservice:latest
+
+minikube start
+
+docker build -t ocelotapigateway:latest .
+
+docker build -t authservice:latest .
+docker build -t identityservice:latest .
+
+kubectl apply -f local-deployment.yaml
+
+deployment ------------------------------------------------------------------------------------------
+kubectl rollout restart deployment ingress-nginx-controller -n ingress-nginx
+kubectl rollout restart deployment ocelot-api-gateway -n api-gateway-namespace
+kubectl rollout restart deployment auth-service -n api-gateway-namespace
+kubectl rollout restart deployment identity-service -n api-gateway-namespace
+
+------------------------------------------------------------------------------------------
+C:\Windows\System32\drivers\etc\hosts
+127.0.0.1 apigateway.local
 
 --------------------------------------------------------------------------------------------------------
 curl https://apigateway.local/healthz
 curl https://apigateway.local/identity/healthz
 curl https://apigateway.local/auth/healthz
+
+-------------------------------------
+kubectl apply -f k8s/ingress.yaml
+kubectl apply -f k8s/apigateway.yaml
+kubectl apply -f k8s/identityservice.yaml
+kubectl apply -f k8s/authservice.yaml
+
+>>kubectl delete -f k8s/ingress.yaml
+
+-------------------------------------------------------------------------------------------
+openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout certs/apigateway.local.key -out certs/apigateway.local.crt -config certs/openssl-san.cnf -extensions 'v3_ext'
+kubectl create secret tls my-tls-secret --cert=apigateway.local.crt --key=apigateway.local.key -n api-gateway-namespace
+
+kubectl create secret tls my-tls-secret --cert=apigateway.local.crt --key=apigateway.local.key -n ingress-nginx
+
+openssl req -new -key apigateway.local.key -out apigateway.local.csr -config openssl-san.cnf
+
+openssl x509 -req -in apigateway.local.csr -CA apigateway.local.crt -CAkey apigateway.local.key -CAcreateserial -out apigateway.local.crt -days 365 -extensions v3_ca -extfile openssl.conf
+openssl s_client -showcerts -connect apigateway.local:443
+Import-Certificate -FilePath "certs\apigateway.local.crt" -CertStoreLocation Cert:\LocalMachine\Root
+ls -l certs/apigateway.local.key
+
+openssl verify -CAfile certs\apigateway.local.crt
+
+pfx ---------------------------------------------------------------------------------------------------------------------------------
+openssl pkcs12 -export -out apigateway.local.pfx -inkey apigateway.local.key -in apigateway.local.crt -password pass:sifre
+kubectl create secret generic my-tls-secret --from-file=apigateway.local.pfx -n api-gateway-namespace
+
+--------------------------------------------------------------------------------------------------------------------------------------
+kubectl delete secret my-tls-secret -n api-gateway-namespace
+kubectl create secret tls my-tls-secret --cert=apigateway.local.crt --key=apigateway.local.key -n api-gateway-namespace
+kubectl rollout restart deployment ingress-nginx-controller -n ingress-nginx
+kubectl get svc -n api-gateway-namespace
+minikube tunnel
+
+-----------------------------------------------------------------------
+kubectl logs -l app.kubernetes.io/name=ingress-nginx -n ingress-nginx
+kubectl get secret my-tls-secret -n api-gateway-namespace -o yaml
+
+namespaces-----------------------------------------------------------
+kubectl get ns 
+kubectl get namespaces
+
+
+kubectl delete namespace ingress-nginx
+
+ingress--------------------------------------------------------------------------------------------------------------------------------
+kubectl get all -n ingress-nginx
+kubectl get ingress api-gateway-ingress -n api-gateway-namespace -o yaml
+kubectl rollout restart deployment ingress-nginx-controller -n ingress-nginx
+
+kubectl create namespace api-gateway-namespace
+
+kubectl delete ingress api-gateway-ingress -n api-gateway-namespace
+kubectl delete -A ValidatingWebhookConfiguration ingress-nginx-admission
+kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/main/deploy/static/provider/cloud/deploy.yaml
+
+kubectl delete all  --all -n ingress-nginx
+
+kubectl delete ingressClass nginx
+kubectl delete ingress ingress-nginx
+kubectl delete deployment ingress-nginx
+kubectl delete service ingress-nginx
+
+webhook------------------------------------------------------------------------------------------------------------------------------
+kubectl get mutatingwebhookconfiguration
+kubectl get validatingwebhookconfiguration
+
+
+kubectl delete ValidatingWebhookConfiguration ingress-nginx-admission
+kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/main/deploy/static/provider/cloud/deploy.yaml
+
+kubectl get mutatingwebhookconfiguration
+
+----------------------------------------
+openssl x509 -in apigateway.local.crt -text -noout
+openssl req -in apigateway.local.csr -text -noout
+openssl rsa -in apigateway.local.key -check
+
+----------------------------------------------------------------------------------------------------------------
+Update ssl
+openssl req -new -newkey rsa:2048 -days 365 -nodes -keyout apigateway.local.key -out apigateway.local.csr
+openssl x509 -req -in apigateway.local.csr -signkey apigateway.local.key -out apigateway.local.crt -extensions v3_req
+
+---------------------------------------------------------------------
+sertifikayı doğrulama
+openssl x509 -in certs/apigateway.local.crt -text -noout
+kubectl get secrets -n api-gateway-namespace
+kubectl get secret my-tls-secret -n api-gateway-namespace
+kubectl describe secret my-tls-secret -n api-gateway-namespace
+kubectl get ingress -n api-gateway-namespace
+
+----------------------------------------------------------------------------------------------------
+kubectl delete secret my-tls-secret -n api-gateway-namespace
+
+------------------------------------------------------------------------------------------
+kubectl get pods -n api-gateway-namespace
+kubectl get svc -n api-gateway-namespace
+kubectl get endpoints -n api-gateway-namespace
+kubectl get events -n ingress-nginx
+kubectl get ingress -n api-gateway-namespace
+kubectl describe secret my-tls-secret -n ingress-nginx
+kubectl describe secret my-tls-secret -n api-gateway-namespace
+
+kubectl logs ocelot-api-gateway-79cb5b764-gj78x -n api-gateway-namespace
+kubectl logs ingress-nginx-controller-7854bdd5d8-kwcfm -n ingress-nginx
+
+
+dns-----------------------------------------------------------------------------------------------------
+kubectl get pods -n kube-system -l k8s-app=kube-dns
+
+
+(nginx) ------------------------------------------------------------------------------------------------------
+kubectl get all -n ingress-nginx
+
+kubectl get pods -n ingress-nginx
+kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/main/deploy/static/provider/cloud/deploy.yaml
+kubectl get configmap -n ingress-nginx
+
+kubectl describe configmap ingress-nginx-controller -n ingress-nginx
+kubectl describe configmap kube-root-ca.crt -n ingress-nginx
+
+kubectl logs -l app.kubernetes.io/name=ingress-nginx -n ingress-nginx
+kubectl create configmap nginx-configuration --from-literal=proxy-body-size=100m -n ingress-nginx
+kubectl get configmap -n ingress-nginx
+
+
+kubectl logs -l app.kubernetes.io/name=ingress-nginx -n ingress-nginx
+kubectl get secret my-tls-secret -n ingress-nginx
+kubectl describe secret my-tls-secret -n ingress-nginx
+kubectl describe ingress api-gateway-ingress -n api-gateway-namespace
+kubectl get pod ingress-nginx-controller-d769c7d99-xqzq4 -n ingress-nginx
+
+delete ---------------------------------------------------------------------------------
+kubectl delete pods --all -n ingress-nginx
+kubectl delete pod -l app.kubernetes.io/name=ingress-nginx -n ingress-nginx
+kubectl delete pod ingress-nginx-controller-d769c7d99-jwzdx -n ingress-nginx
+
+------------------------------------------------------------------------------------
+kubectl get svc --all-namespaces
+kubectl get pods -n kube-system
+
+------------------------------------------------------------------------------------------------
+kubectl delete -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/main/deploy/static/provider/cloud/deploy.yaml
+kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/main/deploy/static/provider/cloud/deploy.yaml
+
+
+
+
+docker run --rm -it -p 8000:80 -p 8001:443 -e ASPNETCORE_URLS="https://+;http://+" -e ASPNETCORE_HTTPS_PORTS=8001 -e ASPNETCORE_Kestrel__Certificates__Default__Password="<CREDENTIAL_PLACEHOLDER>" -e ASPNETCORE_Kestrel__Certificates__Default__Path=/https/aspnetapp.pfx -v ${HOME}/.aspnet/https:/https/ mcr.microsoft.com/dotnet/samples:aspnetapp
+
+
+
+kubectl logs ocelot-api-gateway-79cb5b764-gj78x -n api-gateway-namespace
+kubectl logs auth-service-6c8d968fc-m7bvm -n api-gateway-namespace
+kubectl logs identity-service-8ff764d9b-sspxf -n api-gateway-namespace

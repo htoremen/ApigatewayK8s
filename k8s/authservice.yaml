@@ -15,7 +15,7 @@ spec:
     spec:
       containers:
       - name: auth-service
-        image: authservice:latest
+        image: huseyintoremen/authservice:latest
         ports:
         - containerPort: 80
 ---

@@ -15,9 +15,10 @@ spec:
     spec:
       containers:
       - name: identity-service
-        image: identityservice:latest
+        image: huseyintoremen/identityservice:latest
         ports:
         - containerPort: 80
+        - containerPort: 443
 ---
 apiVersion: v1
 kind: Service

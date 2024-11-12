@@ -1,31 +1,21 @@
 {
-  "Routes": [
+  "ReRoutes": [
     {
-      "DownstreamPathTemplate": "/api/identity/{everything}",
+      "DownstreamPathTemplate": "/auth/{everything}",
+      "UpstreamPathTemplate": "/auth/{everything}",
       "DownstreamScheme": "http",
-      "DownstreamHostAndPorts": [
-        {
-          "Host": "localhost",
-          "Port": 6102
-        }
-      ],
-      "UpstreamPathTemplate": "/identity/{everything}",
-      "UpstreamHttpMethod": [ "GET", "POST", "PUT", "DELETE" ]
+      "DownstreamHostAndPort": "auth-service:80",
+      "UpstreamHttpMethod": [ "GET", "POST" ]
     },
     {
-      "DownstreamPathTemplate": "/api/auth/{everything}",
+      "DownstreamPathTemplate": "/identity/{everything}",
+      "UpstreamPathTemplate": "/identity/{everything}",
       "DownstreamScheme": "http",
-      "DownstreamHostAndPorts": [
-        {
-          "Host": "localhost",
-          "Port": 6103
-        }
-      ],
-      "UpstreamPathTemplate": "/auth/{everything}",
-      "UpstreamHttpMethod": [ "GET", "POST", "PUT", "DELETE" ]
+      "DownstreamHostAndPort": "identity-service:80",
+      "UpstreamHttpMethod": [ "GET", "POST" ]
     }
   ],
   "GlobalConfiguration": {
-    "BaseUrl": "https://localhost:7100"
+    "BaseUrl": "https://apigateway.local"
   }
 }

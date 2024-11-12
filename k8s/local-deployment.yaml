@@ -1,0 +1,59 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ocelot-api-gateway
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: ocelot-api-gateway
+  template:
+    metadata:
+      labels:
+        app: ocelot-api-gateway
+    spec:
+      containers:
+        - name: ocelot-api-gateway
+          image: ocelotapigateway:latest
+          ports:
+            - containerPort: 80
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: auth-service
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: auth-service
+  template:
+    metadata:
+      labels:
+        app: auth-service
+    spec:
+      containers:
+        - name: auth-service
+          image: authservice:latest
+          ports:
+            - containerPort: 80
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: identity-service
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: identity-service
+  template:
+    metadata:
+      labels:
+        app: identity-service
+    spec:
+      containers:
+        - name: identity-service
+          image: identityservice:latest
+          ports:
+            - containerPort: 80
