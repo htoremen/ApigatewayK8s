@@ -1,0 +1,72 @@
+docker tag ocelotapigateway:latest huseyintoremen/ocelotapigateway:latest
+docker tag authservice:latest huseyintoremen/authservice:latest
+docker tag identityservice:latest huseyintoremen/identityservice:latest
+
+-----------------------------------------------------------
+docker push huseyintoremen/ocelotapigateway:latest
+docker push huseyintoremen/authservice:latest
+docker push huseyintoremen/identityservice:latest
+
+------------------------------------------------------------------------------
+curl https://apigateway.local/healthz
+curl https://apigateway.local/identity/healthz
+curl https://apigateway.local/auth/healthz
+
+-------------------------------------
+kubectl apply -f k8s/ingress.yaml
+kubectl apply -f k8s/apigateway.yaml
+kubectl apply -f k8s/identityservice.yaml
+kubectl apply -f k8s/authservice.yaml
+kubectl apply -f k8s/metallb-config.yaml
+
+>>kubectl delete -f k8s/metallb-config.yaml
+
+----------------------------------------------------------
+kubectl create namespace api-gateway-namespace
+kubectl create secret tls my-tls-secret --cert=tls.crt --key=tls.key -n api-gateway-namespace
+
+
+pod--------------------------------------------
+kubectl get namespaces
+
+kubectl get pods -n api-gateway-namespace
+kubectl get pods --all-namespaces
+
+kubectl get svc -n api-gateway-namespace
+
+kubectl get endpoints -n api-gateway-namespace
+
+kubectl get events -n ingress-nginx
+
+kubectl get events -n ingress-nginx
+
+kubectl logs ocelot-api-gateway-7fb8c5b578-z5szw -n api-gateway-namespace
+
+secret---------------------------------------------------------------------------
+kubectl get secret my-tls-secret -n api-gateway-namespace
+kubectl get secrets -n api-gateway-namespace
+
+
+kubectl describe ingress api-gateway-ingress -n api-gateway-namespace
+kubectl describe svc ocelot-api-gateway -n api-gateway-namespace
+
+kubectl get service ingress-nginx-controller-7d56585cd5-r79zq 
+
+secret--------------------------------
+kubectl exec -it ocelot-api-gateway-7fb8c5b578-z5szw   -n api-gateway-namespace -- /bin/bash
+ls /certs
+cat /certs/tls.crt
+cat /certs/tls.key
+
+
+kubectl get secret my-tls-secret -n api-gateway-namespace -o yaml
+kubectl exec -it ocelot-api-gateway-7fb8c5b578-z5szw  -n api-gateway-namespace -- ls /certs
+
+------------------------- 
+minikube ip
+sudo nano /etc/hosts
+192.168.49.2 api.gursoygrup.com.tr
+curl https://api.gursoygrup.com.tr/healthz
+
+-------------------------------------
+kubectl expose svc ocelot-api-gateway --type=NodePort --name=ocelot-api-gateway-nodeport -n api-gateway-namespace

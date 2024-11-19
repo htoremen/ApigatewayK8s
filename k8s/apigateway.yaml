@@ -14,15 +14,19 @@ spec:
         app: ocelot-api-gateway
     spec:
       containers:
-      - name: ocelot-api-gateway
-        image: huseyintoremen/ocelotapigateway:latest
-        ports:
-        - containerPort: 80
-        - containerPort: 443
-    volumeMounts:
-      - name: certs
-        mountPath: "/app/secrets"
-        readOnly: true
+        - name: ocelot-api-gateway
+          image: huseyintoremen/ocelotapigateway:latest
+          ports:
+            - containerPort: 80
+            - containerPort: 443
+          volumeMounts:
+            - name: certs
+              mountPath: "/certs"
+              readOnly: true
+      volumes:
+        - name: certs
+          secret:
+            secretName: my-tls-secret
 ---
 apiVersion: v1
 kind: Service
@@ -30,12 +34,14 @@ metadata:
   name: ocelot-api-gateway
   namespace: api-gateway-namespace
 spec:
+  type: LoadBalancer  # LoadBalancer tipi eklendi
+  loadBalancerIP: 85.111.31.50  # Sabit IP tanımı
   ports:
-  - name: http-port
-    port: 80
-    targetPort: 80
-  - name: https-port
-    port: 443
-    targetPort: 443
+    - name: http-port
+      port: 80
+      targetPort: 80
+    - name: https-port
+      port: 443
+      targetPort: 443
   selector:
     app: ocelot-api-gateway

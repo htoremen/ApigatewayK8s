@@ -18,6 +18,7 @@ spec:
         image: huseyintoremen/authservice:latest
         ports:
         - containerPort: 80
+        - containerPort: 443
 ---
 apiVersion: v1
 kind: Service

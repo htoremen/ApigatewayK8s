@@ -4,16 +4,17 @@ metadata:
   name: api-gateway-ingress
   namespace: api-gateway-namespace
   annotations:
-    nginx.ingress.kubernetes.io/ssl-redirect: "true"    
     nginx.ingress.kubernetes.io/rewrite-target: /
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+    nginx.ingress.kubernetes.io/proxy-body-size: 10m
 spec:
   ingressClassName: nginx
   tls:
   - hosts:
-    - apigateway.local
+    - api.gursoygrup.com.tr
     secretName: my-tls-secret
   rules:
-    - host: apigateway.local
+    - host: api.gursoygrup.com.tr
       http:
         paths:
           - path: /healthz
@@ -22,18 +23,18 @@ spec:
               service:
                 name: ocelot-api-gateway
                 port:
-                  number: 80
+                  number: 443
           - path: /identity/healthz
             pathType: Prefix
             backend:
               service:
                 name: identity-service
                 port:
-                  number: 80
+                  number: 443
           - path: /auth/healthz
             pathType: Prefix
             backend:
               service:
                 name: auth-service
                 port:
-                  number: 80
+                  number: 443  
